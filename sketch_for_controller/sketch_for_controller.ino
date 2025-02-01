@@ -57,7 +57,7 @@ void drawButtons() {
 }
 
 void sendCommand(String command) {
-  Serial.println("Sending command: " + command);
+  Serial.print(command);
   delay(1000);
 }
 
@@ -72,8 +72,6 @@ TSPoint getPoint() {
 
 
 void powerOff() {
-  Serial.println("Power off");
-
   clearScreen();
   drawPowerButton(tft.width() / 2, tft.height() / 2, 60, BLUE);
 
@@ -102,8 +100,6 @@ void powerOff() {
 
 
 void sleepMode() {
-  Serial.println("Sleep");
-
   clearScreen();
   drawMoon(tft.width() / 2, tft.height() / 2, 60, BLUE);
 
@@ -142,13 +138,9 @@ void setup() {
 }
 
 void loop() {
-  TSPoint p = ts.getPoint();
-  pinMode(XM, OUTPUT);
-  pinMode(YP, OUTPUT);
+  TSPoint p = getPoint();
 
   if (p.z < 1000 && p.z != 0 && p.z > -1000) {
-    Serial.println("Detected: " + (String) p.x + " " + (String) p.y);
-
     if (p.y > -900) powerOff();
     else if (p.y < -900) sleepMode();
   }
