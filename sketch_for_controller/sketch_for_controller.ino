@@ -62,6 +62,14 @@ void sendCommand(String command) {
 }
 
 
+TSPoint getPoint() {
+  TSPoint p = ts.getPoint();
+  pinMode(XM, OUTPUT);
+  pinMode(YP, OUTPUT);
+
+  return p;
+}
+
 
 void powerOff() {
   Serial.println("Power off");
@@ -69,13 +77,57 @@ void powerOff() {
   clearScreen();
   drawPowerButton(tft.width() / 2, tft.height() / 2, 60, BLUE);
 
-  delay(500);
+  delay(300);
 
-  TSPoint p = ts.getPoint();
+  for (int i = 0; i < 10; i++) {
+    TSPoint p = getPoint();
 
-  if (p.z < 1000 && p.z != 0 && p.z > -1000) {
-    sendCommand("poweroff");
+    if (p.z < 1000 && p.z != 0 && p.z > -1000) {
+      sendCommand("do poweroff");
+
+      tft.setCursor(2, 2);
+      tft.setTextColor(WHITE);  tft.setTextSize(4);
+      tft.println("POWER OFF");
+
+      delay(5000);
+
+      break;
+    }
+
+    delay(25);
   }
+
+  drawButtons();
+}
+
+
+void sleepMode() {
+  Serial.println("Sleep");
+
+  clearScreen();
+  drawMoon(tft.width() / 2, tft.height() / 2, 60, BLUE);
+
+  delay(300);
+
+  for (int i = 0; i < 10; i++) {
+    TSPoint p = getPoint();
+
+    if (p.z < 1000 && p.z != 0 && p.z > -1000) {
+      sendCommand("do sleep");
+
+      tft.setCursor(2, 2);
+      tft.setTextColor(WHITE);  tft.setTextSize(4);
+      tft.println("SLEEP");
+
+      delay(5000);
+
+      break;
+    }
+
+    delay(25);
+  }
+
+  drawButtons();
 }
 
 
@@ -91,20 +143,13 @@ void setup() {
 
 void loop() {
   TSPoint p = ts.getPoint();
+  pinMode(XM, OUTPUT);
+  pinMode(YP, OUTPUT);
 
   if (p.z < 1000 && p.z != 0 && p.z > -1000) {
     Serial.println("Detected: " + (String) p.x + " " + (String) p.y);
 
     if (p.y > -900) powerOff();
-    else if (p.y < -900) {
-      Serial.println("Sleep");
-      
-      delay(500);
-    }
-  }
-
-  if (millis() % 1000 == 0) {
-    Serial.println("Remove command from buffer");
-    tft.fillScreen(BLACK);
+    else if (p.y < -900) sleepMode();
   }
 }
