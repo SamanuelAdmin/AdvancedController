@@ -29,7 +29,10 @@ public class Main {
                 for (SerialPort port : SerialPort.getCommPorts()) {
                     System.out.println(port.getSystemPortName());
                 }
+
+                return;
             }
+
             COMPortName = args[0];
         }
 
@@ -55,7 +58,7 @@ public class Main {
 
                     if (gottenCommand.equals("do sleep")) {
                         System.out.println(LocalTime.now() + " -> Doing sleep");
-                        Process process = Runtime.getRuntime().exec("powercfg -hibernate off && rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
+                        Process process = Runtime.getRuntime().exec("cmd.exe /c powercfg -hibernate off && rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
                         process.waitFor();
                     } else if (gottenCommand.equals("do poweroff")) {
                         System.out.println(LocalTime.now() + " -> Power off");
