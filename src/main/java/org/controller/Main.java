@@ -25,6 +25,11 @@ public class Main {
         if (args.length < 1) {
             COMPortName = "COM5";
         } else {
+            if (args[0].equals("findport")) {
+                for (SerialPort port : SerialPort.getCommPorts()) {
+                    System.out.println(port.getSystemPortName());
+                }
+            }
             COMPortName = args[0];
         }
 
