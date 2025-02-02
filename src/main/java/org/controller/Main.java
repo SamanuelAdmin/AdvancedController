@@ -59,6 +59,11 @@ public class Main {
             return;
         }
 
+        if (argumentsHandler.hasArg("d")) {
+            COMMAND_CHECKER_DELAY = Integer.parseInt(argumentsHandler.getArg("d"));
+            logger.log("New delay for commands checker: " + COMMAND_CHECKER_DELAY);
+        }
+
 
         while (true) {
             String gottenCommand = comPortManager.readFromSerialPort();
