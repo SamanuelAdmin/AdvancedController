@@ -1,14 +1,20 @@
 package org.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import org.controller.modules.ComPortManager;
+import org.controller.modules.ArgumentsHandler;
+import org.controller.modules.Logger;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.Arrays;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+    // program settings
+    private static int COMMAND_CHECKER_DELAY = 10; // in millis
+
+
     public static String bytesToString(byte[] bytes) {
         String result = "";
 
@@ -20,56 +26,61 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String COMPortName;
+        // loading base components
+        Logger logger = new Logger();
+        ArgumentsHandler argumentsHandler = new ArgumentsHandler(args);
 
-        if (args.length < 1) {
-            COMPortName = "COM5";
+        if (!argumentsHandler.programArgs.isEmpty()) {
+            logger.log("Load program with args: \n" + argumentsHandler.programArgs);
         } else {
-            if (args[0].equals("findport")) {
-                for (SerialPort port : SerialPort.getCommPorts()) {
-                    System.out.println(port.getSystemPortName());
-                }
-
-                return;
-            }
-
-            COMPortName = args[0];
+            logger.log("Load program without args.");
         }
 
-        SerialPort serialPort = SerialPort.getCommPort(COMPortName);
-        serialPort.openPort();
-        serialPort.setComPortParameters(9600, 8, 1, 0);
 
-        if (!serialPort.isOpen()) {
-            System.out.println("Serial port not open");
+        ComPortManager comPortManager = new ComPortManager(logger);
+
+        if (argumentsHandler.hasArg("p")) {
+            boolean isCorrect = comPortManager.changeSerialPort(
+                    argumentsHandler.getArg("p")
+            );
+
+            if (!isCorrect) return;
+        }
+
+        if (argumentsHandler.hasOption("s")) {
+            logger.log("Available serial ports:");
+
+            SerialPort[] serialPorts = comPortManager.getAllSerialPorts();
+
+            for (SerialPort serialPort : serialPorts) {
+                logger.log(false, "(" + serialPort.getSystemPortName() + ")     " + serialPort.toString());
+            }
+
             return;
         }
 
 
-        while (serialPort.isOpen()) {
-            if (serialPort.bytesAvailable() > 0){
-                byte[] gottenBytes = new byte[serialPort.bytesAvailable()];
-                serialPort.readBytes(gottenBytes, serialPort.bytesAvailable());
+        while (true) {
+            String gottenCommand = comPortManager.readFromSerialPort();
 
-                String gottenCommand = bytesToString(gottenBytes);
+            if (!gottenCommand.equals("")) {
+                logger.log(
+                        "Gotten from port " + comPortManager.getSerialPortName()
+                                + ": \"" + gottenCommand + "\""
+                );
 
-                if (gottenCommand.length() > 0) {
-                    System.out.println("\"" + gottenCommand + "\"");
-
-                    if (gottenCommand.equals("do sleep")) {
-                        System.out.println(LocalTime.now() + " -> Doing sleep");
-                        Process process = Runtime.getRuntime().exec("cmd.exe /c powercfg -hibernate off && rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
-                        process.waitFor();
-                    } else if (gottenCommand.equals("do poweroff")) {
-                        System.out.println(LocalTime.now() + " -> Power off");
-                        Process process = Runtime.getRuntime().exec("shutdown /s /t 0");
-                        process.waitFor();
-                    }
+                if (gottenCommand.equals("do sleep")) {
+                    System.out.println(LocalTime.now() + " -> Doing sleep");
+                    Process process = Runtime.getRuntime().exec("cmd.exe /c powercfg -hibernate off && rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
+                    process.waitFor();
+                } else if (gottenCommand.equals("do poweroff")) {
+                    System.out.println(LocalTime.now() + " -> Power off");
+                    Process process = Runtime.getRuntime().exec("shutdown /s /t 0");
+                    process.waitFor();
                 }
             }
 
+            Thread.sleep(COMMAND_CHECKER_DELAY);
         }
-
-        serialPort.closePort();
     }
 }
