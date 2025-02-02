@@ -8,8 +8,7 @@ import org.controller.modules.Logger;
 import java.io.IOException;
 import java.time.LocalTime;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
 public class Main {
     // program settings
     private static int COMMAND_CHECKER_DELAY = 10; // in millis
