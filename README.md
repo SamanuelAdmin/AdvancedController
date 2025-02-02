@@ -69,8 +69,9 @@ javac -jar FILENAME.jar -d 100
 
 ### 📦 Dependencies
 - 📌 JDK >= 21
-- 📌 Dependency 2
-- 📌 Dependency 3
+
+[//]: # (- 📌 Dependency 2)
+[//]: # (- 📌 Dependency 3)
 
 ### 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
